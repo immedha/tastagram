@@ -14,6 +14,7 @@ export const loginAction = createAction<loginActionPayload>('user/loginAction');
 
 export interface signUpActionPayload {
   email: string;
+  username: string;
   password: string;
 }
 

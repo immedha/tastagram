@@ -18,7 +18,8 @@ function Signup() {
       <input type="text" value={username} onChange={(e) => setUsername(e.target.value)}/>
       <p>Create a password</p>
       <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}/>
-      <button onClick={() => dispatch(signUpAction({email, password}))}>Sign up</button>
+      {/* check that username doesn't already exist */}
+      <button onClick={() => dispatch(signUpAction({email, username, password}))}>Sign up</button> 
       <p>Already have an account? Login <a href="#" onClick={() => dispatch(setDisplayedComponent('login'))}>here</a></p>
     </div>
   )

@@ -17,7 +17,7 @@ function App() {
 
   useEffect(() => {
     if (userId) {
-      console.log('fetch initial data!!!');
+      console.log('fetching data');
       dispatch(fetchInitialDataAction({userId}));
       dispatch(setDisplayedComponent("home"));
     } else {
@@ -37,7 +37,7 @@ function App() {
     if (displayedComponent == "login") {
       return <Login />;
     } else if (displayedComponent == "home") {
-      return <Home userId={userId} />;
+      return <Home />;
     } else if (displayedComponent == "signup") {
       return <Signup />;
     } else if (displayedComponent == "logout") {

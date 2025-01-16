@@ -1,8 +1,12 @@
-function Home(props: {userId: string | null}) {
+import { useSelector } from "react-redux"
+import { selectUsername } from "../store/user/userSlice";
+
+function Home() {
+  const username = useSelector(selectUsername);
   return (
     <div>
       <h1>Home</h1>
-      <p>Welcome, {props.userId}</p>
+      <p>Welcome, {username}</p>
     </div>
   )
 }
