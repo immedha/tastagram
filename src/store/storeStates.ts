@@ -10,6 +10,7 @@ export interface globalSliceState {
 export interface userSliceState extends userDbState{
   userId: string | null,
   feed: FeedPhotoData[] | null,
+  nextFeed: FeedPhotoData[] | null,
   feedIdx: number,
 }
 
@@ -19,7 +20,6 @@ export interface FeedPhotoData {
   userId: string,
   username: string,
   name: string,
-  tags: string[],
 }
 
 export interface UserPhoto {

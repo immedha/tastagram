@@ -38,7 +38,16 @@ export interface fetchInitialDataActionFormat {
 
 export const fetchInitialDataAction = createAction<fetchInitialDataActionPayload>('user/fetchInitialDataAction');
 
-export const generateFeedAction = createAction('user/generateFeedAction');
+export interface generateFeedActionPayload {
+  prefetch: boolean;
+}
+
+export interface generateFeedActionFormat {
+  type: string;
+  payload: generateFeedActionPayload
+}
+
+export const generateFeedAction = createAction<generateFeedActionPayload>('user/generateFeedAction');
 
 export interface swipePhotoActionPayload {
   liked: boolean;

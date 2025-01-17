@@ -7,6 +7,7 @@ function Feed() {
   const dispatch = useDispatch();
   const feed: FeedPhotoData[] | null = useSelector(selectFeed);
   const feedIdx: number = useSelector(selectFeedIdx);
+
   if (!feed || feedIdx >= FEED_SIZE) {
     return <div>Loading...</div>
   }
@@ -18,11 +19,11 @@ function Feed() {
         <button style={{width:'100px', height: '100px', fontSize: '80px', border: 'none', background: 'none'}} onClick={() => dispatch(swipePhotoAction({ liked: false }))}>👈</button>
         <div>
           <img
-            src={feed[feedIdx].photoUrl}
-            alt={`url is ${feed[feedIdx].photoUrl}`}
+            src={feed[feedIdx] ? feed[feedIdx].photoUrl : ''}
+            alt={`url is ${feed[feedIdx] ? feed[feedIdx].photoUrl : 'could not find image'}`}
             style={{ width: '300px', height: '300px' }}
           />
-          <p><em>@{feed[feedIdx].username}</em></p>
+          <p><em>@{feed[feedIdx] ? feed[feedIdx].username : 'could not find image'}</em></p>
         </div>
         <button style={{width:'100px', height: '100px', fontSize: '80px', border: 'none', background: 'none'}} onClick={() => dispatch(swipePhotoAction({ liked: true }))}>👉</button>
       </div>

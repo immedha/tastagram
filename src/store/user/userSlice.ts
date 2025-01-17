@@ -8,6 +8,7 @@ const initialState: userSliceState = {
   likedTags: null,
   dislikedTags: null,
   feed: null,
+  nextFeed: null,
   feedIdx: 0,
 }
 
@@ -33,6 +34,9 @@ const userSlice = createSlice({
     setFeed: (state, action) => { // action.payload is just a string[]
       state.feed = action.payload;
     },
+    setNextFeed: (state, action) => { // action.payload is just a string[]
+      state.nextFeed = action.payload;
+    },
     incrFeedIdx: (state) => {
       state.feedIdx++;
     },
@@ -50,7 +54,7 @@ const userSlice = createSlice({
   }
 });
 
-export const { incrFeedIdx, resetFeedIdx, setUsername, setUserId, setPhotos, setLikedTags, setDislikedTags, setFeed, setUserData } = userSlice.actions;
+export const { setNextFeed, incrFeedIdx, resetFeedIdx, setUsername, setUserId, setPhotos, setLikedTags, setDislikedTags, setFeed, setUserData } = userSlice.actions;
 
 export const selectUsername = (state: allSlicesState) => state.user.username;
 export const selectUserId = (state: allSlicesState) => state.user.userId;
@@ -59,5 +63,6 @@ export const selectFeedIdx = (state: allSlicesState) => state.user.feedIdx;
 export const selectLikedTags = (state: allSlicesState) => state.user.likedTags;
 export const selectDislikedTags = (state: allSlicesState) => state.user.dislikedTags;
 export const selectPhotos = (state: allSlicesState) => state.user.photos;
+export const selectNextFeed = (state: allSlicesState) => state.user.nextFeed;
 
 export default userSlice.reducer;

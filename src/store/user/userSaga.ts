@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { all, call, put, takeEvery } from 'redux-saga/effects';
-import { fetchInitialDataAction, fetchInitialDataActionFormat, generateFeedAction, loginAction, loginActionFormat, logoutAction, signUpAction, signUpActionFormat, swipePhotoAction, swipePhotoActionFormat, addUserPhotoActionFormat, addUserPhotoAction } from './userActions';
+import { all, call, fork, put, takeEvery } from 'redux-saga/effects';
+import { fetchInitialDataAction, fetchInitialDataActionFormat, generateFeedAction, loginAction, loginActionFormat, logoutAction, signUpAction, signUpActionFormat, swipePhotoAction, swipePhotoActionFormat, addUserPhotoActionFormat, addUserPhotoAction, generateFeedActionFormat } from './userActions';
 import { Auth, createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, UserCredential } from "firebase/auth";
 import Cookies from 'universal-cookie';
-import { incrFeedIdx, resetFeedIdx, selectDislikedTags, selectFeedIdx, selectLikedTags, selectPhotos, selectUserId, setDislikedTags, setFeed, setLikedTags, setPhotos, setUserData, setUserId } from './userSlice';
-import { addPhotoToTags, addPhotoToUser, fetchUserData, generateNewFeed, initializeUserInDb, savePhotoToDb, savePhotoToStorage, setDislikedTagsInDb, setLikedTagsInDb } from '../../dbQueries';
+import { incrFeedIdx, resetFeedIdx, selectDislikedTags, selectFeedIdx, selectLikedTags, selectNextFeed, selectPhotos, selectUserId, selectUsername, setDislikedTags, setFeed, setLikedTags, setNextFeed, setPhotos, setUserData, setUserId } from './userSlice';
+import { addPhotoToTags, addPhotoToUser, fetchUserData, generateNewFeed, getTagsOfPhoto, initializeUserInDb, savePhotoToDb, savePhotoToStorage, setDislikedTagsInDb, setLikedTagsInDb } from '../../dbQueries';
 import { FEED_SIZE, FeedPhotoData, userDbState, UserPhoto } from '../storeStates';
 import { select } from 'redux-saga/effects';
 
@@ -13,7 +13,6 @@ function* logIn(action: loginActionFormat) {
     const {email, password} = action.payload;
     const auth: Auth = yield call(getAuth);
     const result: UserCredential = yield call(signInWithEmailAndPassword, auth, email, password)
-    console.log("User logged in:", result.user);
     new Cookies().set("userId", "" + result.user.uid);
     yield put(setUserId("" + result.user.uid));
   } catch (error: any) {
@@ -41,7 +40,6 @@ function* signUp(action: signUpActionFormat) {
     const result: UserCredential = yield call(createUserWithEmailAndPassword, auth, email, password);
     yield call(initializeUserInDb, username, result.user.uid);
     // add user to db
-    console.log("User signed up:", result.user);
     new Cookies().set("userId", "" + result.user.uid);
     // set user data to redux store
     yield put(setUserId("" + result.user.uid));
@@ -57,17 +55,22 @@ function* fetchInitialData(action: fetchInitialDataActionFormat) {
     const userData: userDbState = yield call(fetchUserData, userId);
     const { username, photos, likedTags, dislikedTags } = userData;
     yield put(setUserData({userId, username, photos, likedTags, dislikedTags}));
-    yield put(generateFeedAction());
+    yield put(generateFeedAction({prefetch: false}));
   } catch (error: any) {
     console.error("Error fetching initial data:", error.message);
   }
 }
 
-function* generateFeed() {
+function* generateFeed(action: generateFeedActionFormat) {
+  const { prefetch } = action.payload;
   const likedTags: string[] = yield select(selectLikedTags);
   const feed: FeedPhotoData[] = yield call(generateNewFeed, likedTags);
-  yield put(setFeed(feed));
-  yield put(resetFeedIdx());
+  if (prefetch) {
+    yield put(setNextFeed(feed));
+  } else {
+    yield put(setFeed(feed));
+    yield put(resetFeedIdx());
+  }
 }
 
 function* swipePhoto(action: swipePhotoActionFormat) {
@@ -75,7 +78,7 @@ function* swipePhoto(action: swipePhotoActionFormat) {
   const feedIdx: number = yield select(selectFeedIdx);
   const feed: FeedPhotoData[] = yield select(state => state.user.feed);
   // get tags of photo
-  const tags: string[] = feed[feedIdx].tags;
+  const tags: string[] = yield call(getTagsOfPhoto, feed[feedIdx].photoId); //feed[feedIdx].tags;
   const {liked} = action.payload;
   // add tags to likedTags/dislikedTags in db+store
   const userId: string = yield select(selectUserId);
@@ -94,30 +97,36 @@ function* swipePhoto(action: swipePhotoActionFormat) {
   }
   // increment feedIdx
   yield put(incrFeedIdx());
-  // generate new feed if feedIdx is at end
-  if (feedIdx + 1 === FEED_SIZE) {
-    console.log("Generating new feed at end...");
-    yield put(generateFeedAction());
+  const newFeedIdx: number = feedIdx + 1;
+  
+  // pre-fetch new feed if feedIdx is almost at end
+  if (newFeedIdx === Math.floor(0.75 * FEED_SIZE)) {
+    yield fork(prefetchNextFeed);
+  } else if (newFeedIdx === FEED_SIZE) { // completed the feed
+    const nextFeed: FeedPhotoData[] = yield select(selectNextFeed);
+    yield put(setFeed([...nextFeed]));
+    yield put(resetFeedIdx());
+    yield put(setNextFeed(null));
   }
+}
+
+function* prefetchNextFeed() {
+  yield put(generateFeedAction({prefetch: true}));
 }
 
 function* addUserPhoto(action: addUserPhotoActionFormat) {
   const { file, name, tags } = action.payload;
   // save photo to firebase storage and get photoUrl
-  console.log('saving to storage');
   const photoUrl: string = yield call(savePhotoToStorage, file);
   // create doc in photos collection in db and save data
-  console.log('saving photo to db');
-  const photoId: string = yield call(savePhotoToDb, name, photoUrl, tags);
-  // add photoId+Url to user's photos array in db
-  console.log('adding photo to user');
   const userId: string = yield select(selectUserId);
+  const username: string = yield select(selectUsername);
+  const photoId: string = yield call(savePhotoToDb, userId, username, name, photoUrl, tags);
+  // add photoId+Url to user's photos array in db
   yield call(addPhotoToUser, userId, photoId, photoUrl);
-  // loop through tags for photo and add to array in corresponding tag document in tags collection
-  console.log('adding photo to tags');
-  yield call(addPhotoToTags, tags, photoId);
+  // loop through tags for photo and add doc in photos collection of corresponding tag document in tags collection
+  yield call(addPhotoToTags, userId, username, name, photoUrl, tags, photoId);
   // add photoId+Url to user's photos array in redux store
-  console.log('adding photo to store');
   const origUserPhotos: UserPhoto[] = yield select(selectPhotos) || [];
   const newPhotos: UserPhoto[] = [...origUserPhotos, {photoId, photoUrl}];
   yield put(setPhotos(newPhotos));
