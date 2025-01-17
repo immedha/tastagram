@@ -7,9 +7,8 @@ const initialState: userSliceState = {
   photos: null,
   likedTags: null,
   dislikedTags: null,
-  recentlyViewedPhotos: null,
   feed: null,
-
+  feedIdx: 0,
 }
 
 const userSlice = createSlice({
@@ -31,29 +30,34 @@ const userSlice = createSlice({
     setDislikedTags: (state, action) => { // action.payload is just a string[]
       state.dislikedTags = action.payload;
     },
-    setRecentlyViewedPhotos: (state, action) => { // action.payload is just a string[]
-      state.recentlyViewedPhotos = action.payload;
-    },
     setFeed: (state, action) => { // action.payload is just a string[]
       state.feed = action.payload;
     },
+    incrFeedIdx: (state) => {
+      state.feedIdx++;
+    },
+    resetFeedIdx: (state) => {
+      state.feedIdx = 0;
+    },
     setUserData: (state, action) => { // action.payload is a userSliceState
-      const { userId, username, photos, likedTags, dislikedTags, recentlyViewedPhotos, feed } = action.payload;
+      const { userId, username, photos, likedTags, dislikedTags } = action.payload;
       state.userId = userId;
       state.username = username;
       state.photos = photos;
       state.likedTags = likedTags;
       state.dislikedTags = dislikedTags;
-      state.recentlyViewedPhotos = recentlyViewedPhotos;
-      state.feed = feed;
     },
   }
 });
 
-export const { setUsername, setUserId, setPhotos, setLikedTags, setDislikedTags, setRecentlyViewedPhotos, setFeed, setUserData } = userSlice.actions;
+export const { incrFeedIdx, resetFeedIdx, setUsername, setUserId, setPhotos, setLikedTags, setDislikedTags, setFeed, setUserData } = userSlice.actions;
 
 export const selectUsername = (state: allSlicesState) => state.user.username;
 export const selectUserId = (state: allSlicesState) => state.user.userId;
-
+export const selectFeed = (state: allSlicesState) => state.user.feed;
+export const selectFeedIdx = (state: allSlicesState) => state.user.feedIdx;
+export const selectLikedTags = (state: allSlicesState) => state.user.likedTags;
+export const selectDislikedTags = (state: allSlicesState) => state.user.dislikedTags;
+export const selectPhotos = (state: allSlicesState) => state.user.photos;
 
 export default userSlice.reducer;

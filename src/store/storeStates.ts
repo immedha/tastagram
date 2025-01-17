@@ -7,15 +7,31 @@ export interface globalSliceState {
   displayedComponent: string | null;
 }
 
-export interface userSliceState extends userDbState {
+export interface userSliceState extends userDbState{
   userId: string | null,
+  feed: FeedPhotoData[] | null,
+  feedIdx: number,
+}
+
+export interface FeedPhotoData {
+  photoId: string,
+  photoUrl: string,
+  userId: string,
+  username: string,
+  name: string,
+  tags: string[],
+}
+
+export interface UserPhoto {
+  photoId: string,
+  photoUrl: string,
 }
 
 export interface userDbState {
   username: string | null,
-  photos: string[] | null,
+  photos: UserPhoto[] | null,
   likedTags: string[] | null,
   dislikedTags: string[] | null,
-  recentlyViewedPhotos: string[] | null,
-  feed: string[] | null,
 }
+
+export const FEED_SIZE: number = 10;

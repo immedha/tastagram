@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import Cookies from "universal-cookie";
 import Login from "./components/Login";
-import Home from "./components/Home";
+import Feed from "./components/Feed";
 import { selectDisplayedComponent, setDisplayedComponent } from "./store/global/globalSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Signup from "./components/Signup";
 import Navbar from "./components/Navbar";
 import { fetchInitialDataAction } from "./store/user/userActions";
-import Logout from "./components/Logout";
+import Profile from "./components/Profile";
 import { selectUserId, setUserId } from "./store/user/userSlice";
 
 function App() {
@@ -19,7 +19,7 @@ function App() {
     if (userId) {
       console.log('fetching data');
       dispatch(fetchInitialDataAction({userId}));
-      dispatch(setDisplayedComponent("home"));
+      dispatch(setDisplayedComponent("feed"));
     } else {
       dispatch(setDisplayedComponent("login"));
     }
@@ -36,12 +36,12 @@ function App() {
   const componentToDisplay = () => {
     if (displayedComponent == "login") {
       return <Login />;
-    } else if (displayedComponent == "home") {
-      return <Home />;
+    } else if (displayedComponent == "feed") {
+      return <Feed />;
     } else if (displayedComponent == "signup") {
       return <Signup />;
     } else if (displayedComponent == "logout") {
-      return <Logout />;
+      return <Profile />;
     } else {
       return null;
     }

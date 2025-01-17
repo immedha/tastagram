@@ -37,3 +37,29 @@ export interface fetchInitialDataActionFormat {
 }
 
 export const fetchInitialDataAction = createAction<fetchInitialDataActionPayload>('user/fetchInitialDataAction');
+
+export const generateFeedAction = createAction('user/generateFeedAction');
+
+export interface swipePhotoActionPayload {
+  liked: boolean;
+}
+
+export interface swipePhotoActionFormat {
+  type: string;
+  payload: swipePhotoActionPayload
+}
+export const swipePhotoAction = createAction<swipePhotoActionPayload>('user/likePhotoAction');
+
+export interface addUserPhotoActionPayload {
+  file: File;
+  name: string;
+  tags: string[];
+}
+
+export interface addUserPhotoActionFormat {
+  type: string;
+  payload: addUserPhotoActionPayload
+}
+export const addUserPhotoAction = createAction<addUserPhotoActionPayload>('user/addUserPhotoAction');
+
+

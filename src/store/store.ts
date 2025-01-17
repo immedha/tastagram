@@ -3,6 +3,7 @@ import createSagaMiddleware from 'redux-saga';
 import rootSaga from './rootSaga.ts';
 import globalReducer from './global/globalSlice.ts';
 import userReducer from './user/userSlice.ts';
+import { addUserPhotoAction } from './user/userActions.ts';
 
 const sagaMiddleware = createSagaMiddleware();
 const middleware = [sagaMiddleware]
@@ -13,7 +14,14 @@ const store = configureStore({
     user: userReducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(middleware),
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [addUserPhotoAction.type],
+        ignoredPaths: ["payload.file"],
+      },
+    })
+    .concat(middleware),
+    // getDefaultMiddleware().concat(middleware),
 })
 
 sagaMiddleware.run(rootSaga);
