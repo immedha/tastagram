@@ -9,7 +9,7 @@ function Feed() {
   const feedIdx: number = useSelector(selectFeedIdx);
 
   if (!feed || feedIdx >= FEED_SIZE) {
-    return <div>Loading...</div>
+    return null;
   }
 
   return (

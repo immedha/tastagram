@@ -5,6 +5,8 @@ export interface allSlicesState {
 
 export interface globalSliceState {
   displayedComponent: string | null;
+  pageState: 'loading' | 'error' | 'idle';
+  errorMessage: string | null;
 }
 
 export interface userSliceState extends userDbState{
