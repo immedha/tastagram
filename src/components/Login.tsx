@@ -5,8 +5,8 @@ import { loginAction } from "../store/user/userActions";
 
 function Login() {
   const dispatch = useDispatch();
-  const [email, setEmail] = useState<string>("immedha@outlook.com");
-  const [password, setPassword] = useState<string>("test123");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
 
   
   return (
