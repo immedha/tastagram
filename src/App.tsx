@@ -32,7 +32,6 @@ function App() {
 
   useEffect(() => {
     if (userId) {
-      console.log('fetching data');
       dispatch(fetchInitialDataAction({userId}));
       dispatch(setDisplayedComponent("feed"));
     } else {
