@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { all, call, fork, put, takeEvery } from 'redux-saga/effects';
 import { fetchInitialDataAction, fetchInitialDataActionFormat, generateFeedAction, loginAction, loginActionFormat, logoutAction, signUpAction, signUpActionFormat, swipePhotoAction, swipePhotoActionFormat, addUserPhotoActionFormat, addUserPhotoAction, generateFeedActionFormat } from './userActions';
-import { Auth, createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, UserCredential } from "firebase/auth";
-import Cookies from 'universal-cookie';
+import { Auth, browserLocalPersistence, createUserWithEmailAndPassword, getAuth, setPersistence, signInWithEmailAndPassword, UserCredential } from "firebase/auth";
 import { incrFeedIdx, resetFeedIdx, selectDislikedTags, selectFeedIdx, selectLikedTags, selectNextFeed, selectPhotos, selectUserId, selectUsername, setDislikedTags, setFeed, setLikedTags, setNextFeed, setPhotos, setUserData, setUserId } from './userSlice';
 import { addPhotoToTags, addPhotoToUser, fetchUserData, generateNewFeed, getTagsOfPhoto, initializeUserInDb, savePhotoToDb, savePhotoToStorage, setDislikedTagsInDb, setLikedTagsInDb } from '../../dbQueries';
 import { FEED_SIZE, FeedPhotoData, userDbState, UserPhoto } from '../storeStates';
@@ -14,8 +13,8 @@ function* logIn(action: loginActionFormat) {
     yield put(setPageState("loading"));
     const {email, password} = action.payload;
     const auth: Auth = yield call(getAuth);
+    yield call(setPersistence, auth, browserLocalPersistence);
     const result: UserCredential = yield call(signInWithEmailAndPassword, auth, email, password)
-    new Cookies().set("userId", "" + result.user.uid);
     yield put(setUserId("" + result.user.uid));
     yield put(setPageState("idle"));
   } catch (error: any) {
@@ -30,7 +29,6 @@ function* logOut() {
     yield put(setPageState("loading"));
     const auth: Auth = yield call(getAuth);
     auth.signOut();
-    new Cookies().remove("userId");
     yield put(setUserId(null));
     yield put(setPageState("idle"));
   } catch (error: any) {
@@ -46,10 +44,10 @@ function* signUp(action: signUpActionFormat) {
     yield put(setPageState("loading"));
     const auth: Auth = yield call(getAuth);
     const { email, username, password } = action.payload;
+    yield call(setPersistence, auth, browserLocalPersistence);
     const result: UserCredential = yield call(createUserWithEmailAndPassword, auth, email, password);
     yield call(initializeUserInDb, username, result.user.uid);
     // add user to db
-    new Cookies().set("userId", "" + result.user.uid);
     // set user data to redux store
     yield put(setUserId("" + result.user.uid));
     yield put(setPageState("idle"));

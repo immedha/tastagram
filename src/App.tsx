@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import Cookies from "universal-cookie";
 import Login from "./components/Login";
 import Feed from "./components/Feed";
 import { selectDisplayedComponent, selectErrorMessage, selectPageState, setDisplayedComponent } from "./store/global/globalSlice";
@@ -9,6 +8,7 @@ import Navbar from "./components/Navbar";
 import { fetchInitialDataAction } from "./store/user/userActions";
 import Profile from "./components/Profile";
 import { selectUserId, setUserId } from "./store/user/userSlice";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 function App() {
   const dispatch = useDispatch();
@@ -16,6 +16,19 @@ function App() {
   const userId = useSelector(selectUserId);
   const pageState: 'loading' | 'error' | 'idle' = useSelector(selectPageState);
   const errorMessage: string | null = useSelector(selectErrorMessage)
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        dispatch(setUserId(user.uid));
+      } else {
+        dispatch(setUserId(null));
+      }
+    });
+
+    return () => unsubscribe();
+  }, [dispatch]);
 
   useEffect(() => {
     if (userId) {
@@ -26,14 +39,6 @@ function App() {
       dispatch(setDisplayedComponent("login"));
     }
   }, [dispatch, userId]);
-
-  useEffect(() => {
-    const cookies = new Cookies();
-    const alreadyLoggedIn = cookies.get("userId");
-    if (alreadyLoggedIn) {
-      dispatch(setUserId(alreadyLoggedIn));
-    }
-  }, [dispatch]);
 
   const componentToDisplay = () => {
     if (displayedComponent == "login") {
